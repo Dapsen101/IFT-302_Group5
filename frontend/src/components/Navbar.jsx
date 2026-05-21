@@ -20,9 +20,7 @@ const NAV_ICONS = [
   },
 ];
 
-export default function Navbar() {
-  const [searchQuery, setSearchQuery] = useState("");
-
+export default function Navbar({ searchQuery, onSearchChange, cartCount }) {
   return (
     <header style={{
       background: "#fff",
@@ -55,7 +53,7 @@ export default function Navbar() {
         <div style={{ flex: 1, display: "flex", maxWidth: 500 }}>
           <input
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search Product"
             style={{
               flex: 1, padding: "9px 14px", border: "1px solid #D1D5DB",
@@ -75,13 +73,26 @@ export default function Navbar() {
         {/* Icon Buttons */}
         <div style={{ display: "flex", gap: 24, marginLeft: "auto" }}>
           {NAV_ICONS.map(({ label, path }) => (
-            <button key={label} style={{
+            <button key={label} type="button" style={{
+              position: "relative",
               background: "none", border: "none", cursor: "pointer",
               display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
             }}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="1.8">
                 <path d={path} />
               </svg>
+              {label === "My cart" && cartCount > 0 && (
+                <span style={{
+                  position: "absolute", top: -5, right: -10,
+                  minWidth: 18, height: 18, borderRadius: 9,
+                  background: "#EF4444", color: "#fff",
+                  fontSize: 11, fontWeight: 700,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  padding: "0 6px",
+                }}>
+                  {cartCount}
+                </span>
+              )}
               <span style={{ fontSize: 11, color: "#6B7280" }}>{label}</span>
             </button>
           ))}

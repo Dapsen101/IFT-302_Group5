@@ -1,20 +1,32 @@
-import { useState } from "react";
-import { PRODUCTS } from "../data";
+import { useEffect, useMemo, useState } from "react";
 import ProductCard from "./ProductCard";
 import Pagination from "./Pagnation";
 
 const SORT_OPTIONS = ["Best match", "Price: Low to High", "Price: High to Low", "Newest first"];
 
-export default function ProductGrid() {
+export default function ProductGrid({ products, currentPage, pageSize, onPageChange, onAddToCart }) {
   const [sortBy, setSortBy] = useState("Best match");
   const [view, setView] = useState("grid");
-  const [currentPage, setCurrentPage] = useState(1);
 
-  const sortedProducts = [...PRODUCTS].sort((a, b) => {
-    if (sortBy === "Price: Low to High") return a.price - b.price;
-    if (sortBy === "Price: High to Low") return b.price - a.price;
-    return 0;
-  });
+  const sortedProducts = useMemo(() => {
+    const list = [...products];
+    if (sortBy === "Price: Low to High") return list.sort((a, b) => a.price - b.price);
+    if (sortBy === "Price: High to Low") return list.sort((a, b) => b.price - a.price);
+    if (sortBy === "Newest first") return list.sort((a, b) => b.id - a.id);
+    return list;
+  }, [products, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(sortedProducts.length / pageSize));
+  const currentProducts = useMemo(
+    () => sortedProducts.slice((currentPage - 1) * pageSize, currentPage * pageSize),
+    [sortedProducts, currentPage, pageSize]
+  );
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      onPageChange(totalPages);
+    }
+  }, [currentPage, onPageChange, totalPages]);
 
   return (
     <div style={{ flex: 1 }}>
@@ -39,6 +51,7 @@ export default function ProductGrid() {
             <button
               key={v}
               onClick={() => setView(v)}
+              type="button"
               style={{
                 width: 34, height: 34, border: "1px solid #D1D5DB",
                 borderRadius: 6,
@@ -60,15 +73,15 @@ export default function ProductGrid() {
         gridTemplateColumns: view === "grid" ? "repeat(3, 1fr)" : "1fr",
         gap: 16,
       }}>
-        {sortedProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
+        {currentProducts.map((product) => (
+          <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} />
         ))}
       </div>
 
       <Pagination
         currentPage={currentPage}
-        totalPages={3}
-        onPageChange={setCurrentPage}
+        totalPages={totalPages}
+        onPageChange={onPageChange}
       />
     </div>
   );

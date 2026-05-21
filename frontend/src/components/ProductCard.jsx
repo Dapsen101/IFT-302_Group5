@@ -1,7 +1,7 @@
 import { useState } from "react";
 import StarRating from "../utils/StarRating";
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, onAddToCart }) {
   const [liked, setLiked] = useState(false);
 
   return (
@@ -54,13 +54,16 @@ export default function ProductCard({ product }) {
         <p style={{ color: "#3B5BDB", fontWeight: 700, fontSize: 16, margin: "0 0 10px" }}>
           ${product.price.toFixed(2)}
         </p>
-        <button style={{
-          width: "100%", padding: "8px 0",
-          border: "1px solid #E5E7EB", borderRadius: 6,
-          background: "#F9FAFB", cursor: "pointer",
-          fontSize: 13, color: "#374151",
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-        }}>
+        <button
+          type="button"
+          onClick={() => onAddToCart?.(product)}
+          style={{
+            width: "100%", padding: "8px 0",
+            border: "1px solid #E5E7EB", borderRadius: 6,
+            background: "#F9FAFB", cursor: "pointer",
+            fontSize: 13, color: "#374151",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+          }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="9" cy="21" r="1" />
             <circle cx="20" cy="21" r="1" />

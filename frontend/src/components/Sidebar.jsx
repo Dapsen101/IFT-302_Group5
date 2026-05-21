@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { SIDEBAR_CATEGORIES, BRANDS, CONDITIONS } from "../data";
+import { CONDITIONS } from "../data";
 import StarRating from "../utils/StarRating";
 
 const Divider = () => (
@@ -15,16 +14,23 @@ const SectionTitle = ({ dot = true, children }) => (
   </p>
 );
 
-export default function Sidebar() {
-  const [selectedCat, setSelectedCat] = useState("All electronics");
-  const [selectedCondition, setSelectedCondition] = useState("Any condition");
-  const [checkedBrands, setCheckedBrands] = useState({ Apple: true });
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
-
-  const toggleBrand = (brand) =>
-    setCheckedBrands((prev) => ({ ...prev, [brand]: !prev[brand] }));
-
+export default function Sidebar({
+  categories,
+  brands = [],
+  selectedCat,
+  selectedCondition,
+  checkedBrands,
+  minPrice,
+  maxPrice,
+  selectedRating,
+  onCategoryChange,
+  onConditionChange,
+  onBrandToggle,
+  onMinPriceChange,
+  onMaxPriceChange,
+  onRatingChange,
+  onClearFilters,
+}) {
   return (
     <aside style={{
       width: 230, flexShrink: 0,
@@ -35,10 +41,10 @@ export default function Sidebar() {
       {/* Categories */}
       <div style={{ padding: "0 16px 16px" }}>
         <SectionTitle>Categories</SectionTitle>
-        {SIDEBAR_CATEGORIES.map((cat, i) => (
+        {categories.map((cat, i) => (
           <div
-            key={i}
-            onClick={() => setSelectedCat(cat)}
+            key={cat}
+            onClick={() => onCategoryChange(cat)}
             style={{
               padding: "7px 10px", borderRadius: 6,
               cursor: "pointer", fontSize: 13,
@@ -58,7 +64,7 @@ export default function Sidebar() {
       {/* Brands */}
       <div style={{ padding: "0 16px 16px" }}>
         <SectionTitle>Brands</SectionTitle>
-        {BRANDS.map((brand) => (
+        {brands.map((brand) => (
           <label key={brand} style={{
             display: "flex", alignItems: "center",
             gap: 8, marginBottom: 6, cursor: "pointer", fontSize: 13,
@@ -66,7 +72,7 @@ export default function Sidebar() {
             <input
               type="checkbox"
               checked={!!checkedBrands[brand]}
-              onChange={() => toggleBrand(brand)}
+              onChange={() => onBrandToggle(brand)}
               style={{ accentColor: "#3B5BDB", width: 14, height: 14 }}
             />
             {brand}
@@ -88,7 +94,7 @@ export default function Sidebar() {
               type="radio"
               name="condition"
               checked={selectedCondition === cond}
-              onChange={() => setSelectedCondition(cond)}
+              onChange={() => onConditionChange(cond)}
               style={{ accentColor: "#3B5BDB" }}
             />
             {cond}
@@ -106,7 +112,7 @@ export default function Sidebar() {
             <p style={{ fontSize: 11, color: "#9CA3AF", margin: "0 0 4px" }}>Min</p>
             <input
               value={minPrice}
-              onChange={(e) => setMinPrice(e.target.value)}
+              onChange={(e) => onMinPriceChange(e.target.value)}
               placeholder="$0"
               style={{
                 width: "100%", padding: "6px 8px",
@@ -119,7 +125,7 @@ export default function Sidebar() {
             <p style={{ fontSize: 11, color: "#9CA3AF", margin: "0 0 4px" }}>Max</p>
             <input
               value={maxPrice}
-              onChange={(e) => setMaxPrice(e.target.value)}
+              onChange={(e) => onMaxPriceChange(e.target.value)}
               placeholder="$1,000"
               style={{
                 width: "100%", padding: "6px 8px",
@@ -129,13 +135,16 @@ export default function Sidebar() {
             />
           </div>
         </div>
-        <button style={{
-          width: "100%", padding: "8px",
-          background: "#EEF2FF", color: "#3B5BDB",
-          border: "1px solid #C7D2FE", borderRadius: 6,
-          fontWeight: 600, fontSize: 13, cursor: "pointer",
-        }}>
-          Apply
+        <button
+          type="button"
+          onClick={onClearFilters}
+          style={{
+            width: "100%", padding: "8px",
+            background: "#EEF2FF", color: "#3B5BDB",
+            border: "1px solid #C7D2FE", borderRadius: 6,
+            fontWeight: 600, fontSize: 13, cursor: "pointer",
+          }}>
+          Clear filters
         </button>
       </div>
 
@@ -143,15 +152,28 @@ export default function Sidebar() {
 
       {/* Star Rating Filter */}
       <div style={{ padding: "0 16px 16px" }}>
-        <SectionTitle dot={false}>Condition</SectionTitle>
+        <SectionTitle dot={false}>Rating</SectionTitle>
         {[5, 4, 3, 2].map((star) => (
-          <label key={star} style={{
-            display: "flex", alignItems: "center",
-            gap: 8, marginBottom: 6, cursor: "pointer", fontSize: 13,
-          }}>
-            <input type="checkbox" style={{ accentColor: "#3B5BDB", width: 14, height: 14 }} />
-            {star} star - <StarRating rating={star} />
-          </label>
+          <button
+            key={star}
+            type="button"
+            onClick={() => onRatingChange(selectedRating === star ? 0 : star)}
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "8px 10px",
+              borderRadius: 8,
+              border: selectedRating === star ? "1px solid #3B5BDB" : "1px solid #E5E7EB",
+              background: selectedRating === star ? "#EEF2FF" : "#fff",
+              cursor: "pointer",
+              marginBottom: 8,
+              fontSize: 13,
+            }}>
+            <span>{star} star{star > 1 ? "s" : ""} & up</span>
+            <StarRating rating={star} />
+          </button>
         ))}
       </div>
     </aside>
