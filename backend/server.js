@@ -1,10 +1,12 @@
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
+const { authRouter } = require("./authRoutes");
+const { orderRouter } = require("./orderRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
-const PRODUCT_API_URL = "https://dummyjson.com/products?limit=50";
+const PRODUCT_API_URL = process.env.PRODUCT_API_URL || "https://dummyjson.com/products?limit=120";
 
 console.log("Backend config: PORT=", PORT, "PRODUCT_API_URL=", PRODUCT_API_URL);
 
@@ -123,7 +125,17 @@ const FALLBACK_PRODUCTS = [
 
 function normalizeProduct(product) {
   const price = Number(product?.price) || 0;
-  const image = product?.thumbnail || (Array.isArray(product?.images) ? product.images[0] : "") || "";
+  let image = product?.thumbnail || (Array.isArray(product?.images) ? product.images[0] : "") || "";
+  
+  // By default the server will use the original image URL. If you have local
+  // SSL/DNS issues with the dummyjson CDN you can set the environment
+  // variable `PLACEHOLDER_FOR_DUMMYJSON=true` to force a placeholder image
+  // for products whose image URL contains "dummyjson.com".
+  const usePlaceholderForDummyJson = (process.env.PLACEHOLDER_FOR_DUMMYJSON || "false").toLowerCase() === "true";
+  if (usePlaceholderForDummyJson && image.includes("dummyjson.com")) {
+    image = `https://placehold.co/400x400/F3F4F6/9CA3AF?text=Product+${product.id}`;
+  }
+
   const totalInventory = Number(product?.stock) || 0;
 
   return {
@@ -141,15 +153,21 @@ function normalizeProduct(product) {
 }
 
 app.use(cors());
+app.use(express.json()); // Enable JSON body parsing for our auth/order endpoints
+
+app.use("/api/auth", authRouter);
+app.use("/api/orders", orderRouter);
 
 app.get("/api/products", async (req, res) => {
   console.log("GET /api/products called");
+
+  // Attempt to fetch from external API; fall back to local data if unavailable
   try {
     console.log("Fetching products from", PRODUCT_API_URL);
     const response = await axios.get(PRODUCT_API_URL, {
-      timeout: 15000,
+      timeout: 8000,
       headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
         Accept: "application/json, text/plain, */*",
       },
     });
@@ -160,13 +178,46 @@ app.get("/api/products", async (req, res) => {
       ? response.data.map(normalizeProduct)
       : [];
 
-    console.log("Product fetch complete, count=", products.length);
-    res.json({ products });
+    if (products.length > 0) {
+      console.log("Product fetch complete, count=", products.length);
+      return res.json({ products });
+    }
+
+    throw new Error("Empty product list from API");
   } catch (error) {
-    console.error("Product API error", error?.message || error);
-    const products = FALLBACK_PRODUCTS;
-    console.log("Returning fallback products, count=", products.length);
-    res.json({ products });
+    console.warn(
+      "External API unavailable (",
+      error?.message || error,
+      ") — serving local fallback products."
+    );
+    return res.json({ products: FALLBACK_PRODUCTS });
+  }
+});
+
+// Temporary debug endpoint: returns raw API response + normalized products
+app.get("/api/products/debug", async (req, res) => {
+  console.log("GET /api/products/debug called");
+  try {
+    const response = await axios.get(PRODUCT_API_URL, {
+      timeout: 8000,
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        Accept: "application/json, text/plain, */*",
+      },
+    });
+
+    const raw = response.data;
+    const products = Array.isArray(raw?.products)
+      ? raw.products.map(normalizeProduct)
+      : Array.isArray(raw)
+      ? raw.map(normalizeProduct)
+      : [];
+
+    return res.json({ ok: true, source: PRODUCT_API_URL, raw, normalized: products });
+  } catch (error) {
+    console.warn("Debug fetch failed:", error?.message || error);
+    // Return fallback so caller can inspect what's being used
+    return res.json({ ok: false, error: error?.message || String(error), fallback: FALLBACK_PRODUCTS });
   }
 });
 

@@ -5,9 +5,17 @@ import CategoryStrip from "./components/CategoryStrip";
 import Sidebar from "./components/Sidebar";
 import ProductGrid from "./components/ProductGrid";
 import Footer from "./components/Footer";
+import CartPage from "./pages/CartPage";
+import CheckoutPage from "./pages/CheckoutPage";
+import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
+import OrdersPage from "./pages/OrdersPage";
+import WishlistPage from "./pages/WishlistPage";
+import ProfilePage from "./pages/ProfilePage";
+import SettingsPage from "./pages/SettingsPage";
 import { CONDITIONS } from "./data";
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 12;
 const API_URL = "http://localhost:4000/api/products";
 
 export default function App() {
@@ -23,6 +31,57 @@ export default function App() {
   const [cartItems, setCartItems] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // ── Page routing: "shop" | "cart" | "checkout" | "login" | "signup" ──
+  const [page, setPage] = useState("shop");
+
+  // ── Auth state ────────────────────────────────────────────────
+  const [user, setUser] = useState(null); // { name, email }
+  const [token, setToken] = useState(localStorage.getItem("token") || null);
+
+  // Check auth on load
+  useEffect(() => {
+    if (token) {
+      fetch("http://localhost:4000/api/auth/me", {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.user) {
+          setUser(data.user);
+        } else {
+          setToken(null);
+          localStorage.removeItem("token");
+        }
+      })
+      .catch(() => {
+        setToken(null);
+        localStorage.removeItem("token");
+      });
+    }
+  }, [token]);
+
+  const handleLogin = (data) => {
+    setUser(data.user);
+    setToken(data.token);
+    localStorage.setItem("token", data.token);
+    setPage("shop");
+  };
+
+  const handleSignup = (data) => {
+    setUser(data.user);
+    setToken(data.token);
+    localStorage.setItem("token", data.token);
+    setPage("shop");
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setToken(null);
+    localStorage.removeItem("token");
+    setCartItems({});
+    setPage("shop");
+  };
 
   const categories = useMemo(
     () => [
@@ -51,7 +110,12 @@ export default function App() {
         return res.json();
       })
       .then((data) => {
-        setProducts(data.products || []);
+        const prods = data.products || [];
+        setProducts(prods);
+        // Debug: log image URLs to help diagnose missing images
+        try {
+          console.log('Loaded products:', prods.length, prods.map(p => ({ id: p.id, img: p.img })).slice(0, 10));
+        } catch (e) {}
         setError("");
       })
       .catch((err) => setError(err.message || "Fetch error"))
@@ -73,37 +137,26 @@ export default function App() {
       if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
-
       if (selectedCat !== "All Categories" && product.category !== selectedCat) {
         return false;
       }
-
       if (selectedCondition !== "Any condition" && product.condition !== selectedCondition) {
         return false;
       }
-
       if (activeBrands.length > 0 && !activeBrands.includes(product.brand)) {
         return false;
       }
-
       if (minPrice) {
         const minValue = Number(minPrice);
-        if (!Number.isNaN(minValue) && product.price < minValue) {
-          return false;
-        }
+        if (!Number.isNaN(minValue) && product.price < minValue) return false;
       }
-
       if (maxPrice) {
         const maxValue = Number(maxPrice);
-        if (!Number.isNaN(maxValue) && product.price > maxValue) {
-          return false;
-        }
+        if (!Number.isNaN(maxValue) && product.price > maxValue) return false;
       }
-
       if (selectedRating && product.rating < selectedRating) {
         return false;
       }
-
       return true;
     });
   }, [products, searchQuery, selectedCat, selectedCondition, checkedBrands, minPrice, maxPrice, selectedRating, brands]);
@@ -127,15 +180,124 @@ export default function App() {
   const handleAddToCart = (product) =>
     setCartItems((prev) => {
       const existing = prev[product.id] ?? { ...product, quantity: 0 };
-      return {
-        ...prev,
-        [product.id]: { ...existing, quantity: existing.quantity + 1 },
-      };
+      return { ...prev, [product.id]: { ...existing, quantity: existing.quantity + 1 } };
     });
 
+  const handleUpdateQty = (id, qty) => {
+    if (qty < 1) { handleRemoveFromCart(id); return; }
+    setCartItems((prev) => ({ ...prev, [id]: { ...prev[id], quantity: qty } }));
+  };
+
+  const handleRemoveFromCart = (id) =>
+    setCartItems((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+
+  const handleFinishOrder = () => {
+    setCartItems({});
+    setPage("shop");
+  };
+
+  // ── Auth-only pages (no navbar/footer) ──────────────────────
+  if (page === "login") {
+    return <LoginPage onLogin={handleLogin} onGoToSignup={() => setPage("signup")} />;
+  }
+  if (page === "signup") {
+    return <SignupPage onSignup={handleSignup} onGoToLogin={() => setPage("login")} />;
+  }
+
+  // ── Shared Navbar ─────────────────────────────────────────────
+  const navbar = (
+    <Navbar
+      searchQuery={searchQuery}
+      onSearchChange={setSearchQuery}
+      cartCount={cartCount}
+      onCartClick={() => setPage("cart")}
+      onSignInClick={() => setPage("login")}
+      user={user}
+      onLogout={handleLogout}
+      onNavigate={setPage}
+    />
+  );
+
+  if (page === "cart") {
+    return (
+      <div style={{ fontFamily: "'Segoe UI', sans-serif", background: "var(--bg-main)", minHeight: "100vh", color: "var(--text-main)" }}>
+        {navbar}
+        <CartPage
+          cartItems={cartItems}
+          onUpdateQty={handleUpdateQty}
+          onRemove={handleRemoveFromCart}
+          onCheckout={() => setPage("checkout")}
+          onContinueShopping={() => setPage("shop")}
+        />
+        <Footer />
+      </div>
+    );
+  }
+
+  if (page === "checkout") {
+    const CheckoutPage = require("./pages/CheckoutPage").default;
+    return (
+      <div style={{ fontFamily: "'Segoe UI', sans-serif", background: "var(--bg-main)", minHeight: "100vh", color: "var(--text-main)" }}>
+        {navbar}
+        <CheckoutPage
+          cartItems={cartItems}
+          token={token}
+          onBackToCart={() => setPage("cart")}
+          onFinish={handleFinishOrder}
+        />
+        <Footer />
+      </div>
+    );
+  }
+
+  // ── New Pages ───────────────────────────────────────────────
+  if (page === "orders") {
+    return (
+      <div style={{ fontFamily: "'Segoe UI', sans-serif", background: "var(--bg-main)", minHeight: "100vh", color: "var(--text-main)" }}>
+        {navbar}
+        <OrdersPage token={token} onNavigate={setPage} />
+        <Footer />
+      </div>
+    );
+  }
+  
+  if (page === "wishlist") {
+    return (
+      <div style={{ fontFamily: "'Segoe UI', sans-serif", background: "var(--bg-main)", minHeight: "100vh", color: "var(--text-main)" }}>
+        {navbar}
+        <WishlistPage onNavigate={setPage} />
+        <Footer />
+      </div>
+    );
+  }
+
+  if (page === "profile") {
+    return (
+      <div style={{ fontFamily: "'Segoe UI', sans-serif", background: "var(--bg-main)", minHeight: "100vh", color: "var(--text-main)" }}>
+        {navbar}
+        <ProfilePage user={user} />
+        <Footer />
+      </div>
+    );
+  }
+
+  if (page === "settings") {
+    return (
+      <div style={{ fontFamily: "'Segoe UI', sans-serif", background: "var(--bg-main)", minHeight: "100vh", color: "var(--text-main)" }}>
+        {navbar}
+        <SettingsPage />
+        <Footer />
+      </div>
+    );
+  }
+
   return (
-    <div style={{ fontFamily: "'Segoe UI', sans-serif", background: "#F8F9FA", minHeight: "100vh", color: "#111" }}>
-      <Navbar searchQuery={searchQuery} onSearchChange={setSearchQuery} cartCount={cartCount} />
+    <div style={{ fontFamily: "'Segoe UI', sans-serif", background: "var(--bg-main)", minHeight: "100vh", color: "var(--text-main)" }}>
+      {navbar}
 
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 20px" }}>
         <Hero />
@@ -160,11 +322,11 @@ export default function App() {
             onClearFilters={handleClearFilters}
           />
           {loading ? (
-            <div style={{ flex: 1, padding: 24, background: "#fff", borderRadius: 12, border: "1px solid #E5E7EB" }}>
+            <div style={{ flex: 1, padding: 24, background: "var(--bg-card)", borderRadius: 12, border: "1px solid var(--border-main)" }}>
               Loading products...
             </div>
           ) : error ? (
-            <div style={{ flex: 1, padding: 24, background: "#fff", borderRadius: 12, border: "1px solid #E5E7EB", color: "#B91C1C" }}>
+            <div style={{ flex: 1, padding: 24, background: "var(--bg-card)", borderRadius: 12, border: "1px solid var(--border-main)", color: "var(--danger)" }}>
               {error}
             </div>
           ) : (

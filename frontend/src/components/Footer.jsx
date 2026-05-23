@@ -3,8 +3,8 @@ import { FOOTER_LINKS } from "../data";
 export default function Footer() {
   return (
     <footer style={{
-      background: "#F3F4F6",
-      borderTop: "3px solid #3B5BDB",
+      background: "var(--bg-nav)",
+      borderTop: "3px solid var(--accent)",
       marginTop: 20,
       padding: "40px 20px 20px",
     }}>
@@ -15,12 +15,12 @@ export default function Footer() {
         }}>
           {Object.entries(FOOTER_LINKS).map(([section, links]) => (
             <div key={section}>
-              <h4 style={{ fontWeight: 700, fontSize: 14, margin: "0 0 12px", color: "#111" }}>
+              <h4 style={{ fontWeight: 700, fontSize: 14, margin: "0 0 12px", color: "var(--text-main)" }}>
                 {section}
               </h4>
               {links.map((link) => (
                 <p key={link} style={{ margin: "0 0 6px", fontSize: 13 }}>
-                  <a href="#" style={{ color: "#3B5BDB", textDecoration: "none" }}>
+                  <a href="#" style={{ color: "var(--accent)", textDecoration: "none" }}>
                     {link}
                   </a>
                 </p>
@@ -30,10 +30,10 @@ export default function Footer() {
         </div>
 
         <div style={{
-          borderTop: "1px solid #E5E7EB", paddingTop: 16,
-          textAlign: "center", fontSize: 13, color: "#6B7280",
+          borderTop: "1px solid var(--border-main)", paddingTop: 16,
+          textAlign: "center", fontSize: 13, color: "var(--text-muted)",
         }}>
-          Copyright © 2026 Store-Front. All Rights Reserved
+          Copyright © 2026 Group-Five. All Rights Reserved
         </div>
       </div>
     </footer>

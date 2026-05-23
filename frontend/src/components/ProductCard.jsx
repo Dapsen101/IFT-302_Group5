@@ -14,10 +14,11 @@ export default function ProductCard({ product, onAddToCart }) {
       flexDirection: "column",
     }}>
       {/* Image Area */}
-      <div style={{ position: "relative", background: "#F4F5F7", height: 200 }}>
+      <div style={{ position: "relative", background: "var(--bg-card)", height: 200 }}>
         <img
-          src={product.img}
+          src={product.img || 'https://placehold.co/400x400/F3F4F6/9CA3AF?text=No+image'}
           alt={product.name}
+          onError={(e) => { e.currentTarget.src = 'https://placehold.co/400x400/F3F4F6/9CA3AF?text=No+image'; }}
           style={{ width: "100%", height: "100%", objectFit: "contain", padding: 16 }}
         />
         <button

@@ -15,14 +15,14 @@ export default function CategoryStrip() {
           }}>
             <div style={{
               width: 80, height: 80,
-              background: "#EEF2FF",
+              background: "var(--accent-bg)",
               borderRadius: 12,
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 32,
             }}>
               {cat.icon}
             </div>
-            <span style={{ fontSize: 12, color: "#374151", textAlign: "center" }}>
+            <span style={{ fontSize: 12, color: "var(--text-strong)", textAlign: "center" }}>
               {cat.name}
             </span>
           </div>
