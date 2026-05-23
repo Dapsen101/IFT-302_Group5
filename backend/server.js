@@ -3,6 +3,7 @@ const cors = require("cors");
 const axios = require("axios");
 const { authRouter } = require("./authRoutes");
 const { orderRouter } = require("./orderRoutes");
+const cartRouter = require("./cartRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -157,6 +158,7 @@ app.use(express.json()); // Enable JSON body parsing for our auth/order endpoint
 
 app.use("/api/auth", authRouter);
 app.use("/api/orders", orderRouter);
+app.use("/api/cart", cartRouter);
 
 app.get("/api/products", async (req, res) => {
   console.log("GET /api/products called");
@@ -219,6 +221,11 @@ app.get("/api/products/debug", async (req, res) => {
     // Return fallback so caller can inspect what's being used
     return res.json({ ok: false, error: error?.message || String(error), fallback: FALLBACK_PRODUCTS });
   }
+});
+
+// 👇 ADD THIS RIGHT HERE
+app.get("/", (req, res) => {
+  res.json({ status: "Backend is running 🚀" });
 });
 
 app.get("/api/health", (_req, res) => {

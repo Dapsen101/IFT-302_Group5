@@ -16,6 +16,13 @@ db.exec(`
     name        TEXT    NOT NULL,
     email       TEXT    NOT NULL UNIQUE COLLATE NOCASE,
     password    TEXT    NOT NULL,
+    phone       TEXT,
+    address     TEXT,
+    city        TEXT,
+    state       TEXT,
+    zip         TEXT,
+    country     TEXT DEFAULT 'United States',
+    avatar_url  TEXT,
     created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
   );
 
@@ -44,6 +51,23 @@ db.exec(`
     price       REAL    NOT NULL,
     quantity    INTEGER NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS cart (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    product_id  INTEGER NOT NULL,
+    quantity    INTEGER NOT NULL DEFAULT 1,
+    added_at    TEXT    NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(user_id, product_id)
+  );
+
+  CREATE TABLE IF NOT EXISTS wishlist (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    product_id  INTEGER NOT NULL,
+    added_at    TEXT    NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(user_id, product_id)
+  );
 `);
 
 // ── Prepared statements ───────────────────────────────────────────────────────
@@ -59,6 +83,11 @@ const stmts = {
   getUserById: db.prepare(
     "SELECT id, name, email, created_at FROM users WHERE id = ?"
   ),
+  updateUserProfile: db.prepare(`
+    UPDATE users
+    SET name = ?, phone = ?, address = ?, city = ?, state = ?, zip = ?, country = ?, avatar_url = ?
+    WHERE id = ?
+  `),
 
   // Orders
   insertOrder: db.prepare(`
@@ -81,6 +110,40 @@ const stmts = {
     SELECT o.*, u.name AS user_name, u.email AS user_email
     FROM orders o JOIN users u ON o.user_id = u.id
     WHERE o.id = ?
+  `),
+
+  // Cart
+  addToCart: db.prepare(`
+    INSERT INTO cart (user_id, product_id, quantity)
+    VALUES (?, ?, ?)
+    ON CONFLICT(user_id, product_id) DO UPDATE SET quantity = quantity + ?
+  `),
+  getCart: db.prepare(`
+    SELECT * FROM cart WHERE user_id = ? ORDER BY added_at DESC
+  `),
+  updateCartQuantity: db.prepare(`
+    UPDATE cart SET quantity = ? WHERE user_id = ? AND product_id = ?
+  `),
+  removeFromCart: db.prepare(`
+    DELETE FROM cart WHERE user_id = ? AND product_id = ?
+  `),
+  clearCart: db.prepare(`
+    DELETE FROM cart WHERE user_id = ?
+  `),
+
+  // Wishlist
+  addToWishlist: db.prepare(`
+    INSERT INTO wishlist (user_id, product_id)
+    VALUES (?, ?)
+  `),
+  getWishlist: db.prepare(`
+    SELECT * FROM wishlist WHERE user_id = ? ORDER BY added_at DESC
+  `),
+  removeFromWishlist: db.prepare(`
+    DELETE FROM wishlist WHERE user_id = ? AND product_id = ?
+  `),
+  isInWishlist: db.prepare(`
+    SELECT 1 FROM wishlist WHERE user_id = ? AND product_id = ?
   `),
 };
 

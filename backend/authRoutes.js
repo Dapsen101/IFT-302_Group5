@@ -123,4 +123,33 @@ router.get("/me", authMiddleware, (req, res) => {
   }
 });
 
+// Update user profile
+router.put("/me", authMiddleware, (req, res) => {
+  try {
+    const { name, phone, address, city, state, zip, country, avatar_url } = req.body;
+    
+    if (!name) {
+      return res.status(400).json({ error: "Name is required" });
+    }
+
+    stmts.updateUserProfile.run(
+      name,
+      phone || "",
+      address || "",
+      city || "",
+      state || "",
+      zip || "",
+      country || "United States",
+      avatar_url || "",
+      req.userId
+    );
+
+    const updatedUser = stmts.getUserById.get(req.userId);
+    res.json({ success: true, user: updatedUser });
+  } catch (error) {
+    console.error("Profile update error:", error);
+    res.status(500).json({ error: "Failed to update profile" });
+  }
+});
+
 module.exports = { authRouter: router, authMiddleware };

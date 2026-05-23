@@ -15,8 +15,9 @@ import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 import { CONDITIONS } from "./data";
 
+
 const PAGE_SIZE = 12;
-const API_URL = "http://localhost:4000/api/products";
+const API_URL = "https://ift-302-group5.onrender.com/api/products";
 
 export default function App() {
   const [products, setProducts] = useState([]);
@@ -42,7 +43,7 @@ export default function App() {
   // Check auth on load
   useEffect(() => {
     if (token) {
-      fetch("http://localhost:4000/api/auth/me", {
+      fetch("https://ift-302-group5.onrender.com/api/auth/me", {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then(res => res.json())
