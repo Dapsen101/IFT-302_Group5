@@ -4,7 +4,7 @@ export default function CategoryStrip() {
   return (
     <div style={{ marginBottom: 28 }}>
       <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>
-        Electronics & Gadgets
+        Electronics & Gadgets 
       </h2>
       <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 4 }}>
         {CATEGORIES.map((cat) => (
