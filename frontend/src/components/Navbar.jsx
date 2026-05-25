@@ -8,6 +8,7 @@ const SAVED_PATH = "M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 
 export default function Navbar({ searchQuery, onSearchChange, cartCount, onCartClick, onSignInClick, user, onLogout, onNavigate }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(document.documentElement.getAttribute("data-theme") === "dark");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const toggleDarkMode = () => {
     const newMode = !isDarkMode;
@@ -33,27 +34,27 @@ export default function Navbar({ searchQuery, onSearchChange, cartCount, onCartC
       position: "sticky", top: 0, zIndex: 100,
     }}>
       <div style={{
-        maxWidth: 1200, margin: "0 auto", padding: "12px 20px",
-        display: "flex", alignItems: "center", gap: 20,
+        maxWidth: 1200, margin: "0 auto", padding: "12px 16px",
+        display: "flex", alignItems: "center", gap: "max(12px, 2vw)",
       }}>
         {/* Logo */}
-        <div onClick={() => onNavigate("shop")} style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 140, cursor: "pointer" }}>
+        <div onClick={() => onNavigate("shop")} style={{ display: "flex", alignItems: "center", gap: 8, minWidth: "fit-content", cursor: "pointer" }}>
           <div style={{
             width: 32, height: 32, borderRadius: 8, background: "var(--accent)",
-            display: "flex", alignItems: "center", justifyContent: "center",
+            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
           }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
               <path d={ORDERS_PATH} />
               <line x1="3" y1="6" x2="21" y2="6" />
             </svg>
           </div>
-          <span style={{ fontWeight: 700, fontSize: 18, color: "var(--text-main)" }}>
+          <span style={{ fontWeight: 700, fontSize: "clamp(14px, 2vw, 18px)", color: "var(--text-main)" }}>
             Group<span style={{ color: "var(--accent)" }}>Five</span>
           </span>
         </div>
 
-        {/* Search */}
-        <div style={{ flex: 1, display: "flex", maxWidth: 500 }}>
+        {/* Search - Hide on mobile */}
+        <div style={{ flex: 1, display: "flex", maxWidth: 500, minWidth: 0 }} className="hide-mobile">
           <input
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
@@ -61,23 +62,24 @@ export default function Navbar({ searchQuery, onSearchChange, cartCount, onCartC
             style={{
               flex: 1, padding: "9px 14px", border: "1px solid var(--border-main)",
               borderRight: "none", borderRadius: "6px 0 0 6px",
-              fontSize: 14, outline: "none", background: 'var(--bg-input)', color: 'var(--text-main)'
+              fontSize: 14, outline: "none", background: 'var(--bg-input)', color: 'var(--text-main)',
+              minWidth: 0,
             }}
           />
           <button style={{
             padding: "9px 18px", background: "var(--accent)", color: "var(--accent-foreground)",
             border: "none", borderRadius: "0 6px 6px 0",
-            fontWeight: 600, fontSize: 14, cursor: "pointer",
+            fontWeight: 600, fontSize: 14, cursor: "pointer", flexShrink: 0,
           }}>
             Search
           </button>
         </div>
 
         {/* Icon area */}
-        <div style={{ display: "flex", gap: 20, marginLeft: "auto", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: "clamp(8px, 1.5vw, 20px)", marginLeft: "auto", alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
 
           {/* Theme Toggle */}
-          <button type="button" onClick={toggleDarkMode} style={iconBtnStyle}>
+          <button type="button" onClick={toggleDarkMode} style={iconBtnStyle} title="Toggle theme">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="1.8">
               {isDarkMode ? (
                 <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -85,7 +87,7 @@ export default function Navbar({ searchQuery, onSearchChange, cartCount, onCartC
                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
               )}
             </svg>
-            <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{isDarkMode ? "Light" : "Dark"}</span>
+            <span style={{ fontSize: 11, color: "var(--text-muted)" }} className="hide-mobile">{isDarkMode ? "Light" : "Dark"}</span>
           </button>
 
           {/* Orders */}
@@ -95,7 +97,7 @@ export default function Navbar({ searchQuery, onSearchChange, cartCount, onCartC
           <NavIconBtn label="Saved" path={SAVED_PATH} onClick={() => onNavigate("wishlist")} />
 
           {/* Cart */}
-          <button type="button" onClick={onCartClick} style={iconBtnStyle}>
+          <button type="button" onClick={onCartClick} style={iconBtnStyle} title="View cart">
             <div style={{ position: "relative" }}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="1.8">
                 <path d={CART_PATH} />
@@ -115,7 +117,7 @@ export default function Navbar({ searchQuery, onSearchChange, cartCount, onCartC
                 </span>
               )}
             </div>
-            <span style={{ fontSize: 11, color: "var(--text-muted)" }}>My cart</span>
+            <span style={{ fontSize: 11, color: "var(--text-muted)" }} className="hide-mobile">My cart</span>
           </button>
 
           {/* Sign in / User avatar */}
@@ -125,17 +127,18 @@ export default function Navbar({ searchQuery, onSearchChange, cartCount, onCartC
               onClick={onSignInClick}
               style={{
                 display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
-                background: "none", border: "none", cursor: "pointer",
+                background: "none", border: "none", cursor: "pointer", flexShrink: 0,
               }}
+              title="Sign in"
             >
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="1.8">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" />
               </svg>
-              <span style={{ fontSize: 11, color: "#6B7280" }}>Sign in</span>
+              <span style={{ fontSize: 11, color: "#6B7280" }} className="hide-mobile">Sign in</span>
             </button>
           ) : (
             /* Avatar dropdown */
-            <div style={{ position: "relative" }}>
+            <div style={{ position: "relative", flexShrink: 0 }}>
               <button
                 type="button"
                 onClick={() => setDropdownOpen((v) => !v)}
@@ -143,6 +146,7 @@ export default function Navbar({ searchQuery, onSearchChange, cartCount, onCartC
                   display: "flex", alignItems: "center", gap: 8,
                   background: "none", border: "none", cursor: "pointer",
                 }}
+                title="User menu"
               >
                 <div style={{
                   width: 34, height: 34, borderRadius: "50%",
@@ -152,7 +156,7 @@ export default function Navbar({ searchQuery, onSearchChange, cartCount, onCartC
                 }}>
                   {initials}
                 </div>
-                <div style={{ textAlign: "left", lineHeight: 1.3 }}>
+                <div style={{ textAlign: "left", lineHeight: 1.3 }} className="hide-mobile">
                   <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-main)", margin: 0 }}>
                     {user.name.split(" ")[0]}
                   </p>
@@ -162,6 +166,7 @@ export default function Navbar({ searchQuery, onSearchChange, cartCount, onCartC
                   width="14" height="14" viewBox="0 0 24 24" fill="none"
                   stroke="var(--text-muted-light)" strokeWidth="2"
                   style={{ transform: dropdownOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}
+                  className="hide-mobile"
                 >
                   <polyline points="6 9 12 15 18 9" />
                 </svg>
@@ -218,22 +223,23 @@ export default function Navbar({ searchQuery, onSearchChange, cartCount, onCartC
       </div>
 
       {/* Nav Links */}
-      <div style={{ borderTop: "1px solid #F3F4F6" }}>
+      <div style={{ borderTop: "1px solid #F3F4F6" }} className="hide-mobile">
         <div style={{
-          maxWidth: 1200, margin: "0 auto", padding: "0 20px",
+          maxWidth: 1200, margin: "0 auto", padding: "0 16px",
           display: "flex", alignItems: "center", gap: 4,
+          overflowX: "auto",
         }}>
           <button style={{
             padding: "10px 14px", border: "none", background: "none",
             cursor: "pointer", fontSize: 14, color: "var(--text-strong)",
-            display: "flex", alignItems: "center", gap: 6,
+            display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
           }}>
             ☰ All categories
           </button>
           {NAV_LINKS.map((link) => (
             <button key={link} style={{
               padding: "10px 14px", border: "none", background: "none",
-              cursor: "pointer", fontSize: 14, color: "var(--text-strong)",
+              cursor: "pointer", fontSize: 14, color: "var(--text-strong)", flexShrink: 0,
             }}>
               {link}
             </button>

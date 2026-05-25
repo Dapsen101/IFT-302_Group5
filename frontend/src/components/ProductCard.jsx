@@ -18,6 +18,7 @@ export default function ProductCard({ product, onAddToCart }) {
         <img
           src={product.img || 'https://placehold.co/400x400/F3F4F6/9CA3AF?text=No+image'}
           alt={product.name}
+          loading="lazy"
           onError={(e) => { e.currentTarget.src = 'https://placehold.co/400x400/F3F4F6/9CA3AF?text=No+image'; }}
           style={{ width: "100%", height: "100%", objectFit: "contain", padding: 16 }}
         />

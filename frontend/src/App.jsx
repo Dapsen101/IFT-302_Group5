@@ -300,45 +300,49 @@ export default function App() {
     <div style={{ fontFamily: "'Segoe UI', sans-serif", background: "var(--bg-main)", minHeight: "100vh", color: "var(--text-main)" }}>
       {navbar}
 
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 20px" }}>
+      <div style={{ width: "100%", padding: "20px 16px" }}>
         <Hero />
         <CategoryStrip />
 
-        <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
-          <Sidebar
-            categories={categories}
-            brands={brands}
-            selectedCat={selectedCat}
-            selectedCondition={selectedCondition}
-            checkedBrands={checkedBrands}
-            minPrice={minPrice}
-            maxPrice={maxPrice}
-            selectedRating={selectedRating}
-            onCategoryChange={setSelectedCat}
-            onConditionChange={setSelectedCondition}
-            onBrandToggle={handleBrandToggle}
-            onMinPriceChange={setMinPrice}
-            onMaxPriceChange={setMaxPrice}
-            onRatingChange={setSelectedRating}
-            onClearFilters={handleClearFilters}
-          />
-          {loading ? (
-            <div style={{ flex: 1, padding: 24, background: "var(--bg-card)", borderRadius: 12, border: "1px solid var(--border-main)" }}>
-              Loading products...
-            </div>
-          ) : error ? (
-            <div style={{ flex: 1, padding: 24, background: "var(--bg-card)", borderRadius: 12, border: "1px solid var(--border-main)", color: "var(--danger)" }}>
-              {error}
-            </div>
-          ) : (
-            <ProductGrid
-              products={filteredProducts}
-              currentPage={currentPage}
-              pageSize={PAGE_SIZE}
-              onPageChange={setCurrentPage}
-              onAddToCart={handleAddToCart}
+        <div style={{ display: "flex", gap: "clamp(16px, 3vw, 24px)", alignItems: "flex-start", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", flex: "0 0 auto", width: "230px", minHeight: "100vh" }} className="hide-mobile">
+            <Sidebar
+              categories={categories}
+              brands={brands}
+              selectedCat={selectedCat}
+              selectedCondition={selectedCondition}
+              checkedBrands={checkedBrands}
+              minPrice={minPrice}
+              maxPrice={maxPrice}
+              selectedRating={selectedRating}
+              onCategoryChange={setSelectedCat}
+              onConditionChange={setSelectedCondition}
+              onBrandToggle={handleBrandToggle}
+              onMinPriceChange={setMinPrice}
+              onMaxPriceChange={setMaxPrice}
+              onRatingChange={setSelectedRating}
+              onClearFilters={handleClearFilters}
             />
-          )}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {loading ? (
+              <div style={{ flex: 1, padding: 24, background: "var(--bg-card)", borderRadius: 12, border: "1px solid var(--border-main)" }}>
+                Loading products...
+              </div>
+            ) : error ? (
+              <div style={{ flex: 1, padding: 24, background: "var(--bg-card)", borderRadius: 12, border: "1px solid var(--border-main)", color: "var(--danger)" }}>
+                {error}
+              </div>
+            ) : (
+              <ProductGrid
+                products={filteredProducts}
+                currentPage={currentPage}
+                pageSize={PAGE_SIZE}
+                onPageChange={setCurrentPage}
+                onAddToCart={handleAddToCart}
+              />
+            )}
+          </div>
         </div>
       </div>
 

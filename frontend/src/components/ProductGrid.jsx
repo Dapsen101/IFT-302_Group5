@@ -70,7 +70,9 @@ export default function ProductGrid({ products, currentPage, pageSize, onPageCha
       {/* Grid */}
       <div style={{
         display: "grid",
-        gridTemplateColumns: view === "grid" ? "repeat(3, 1fr)" : "1fr",
+        gridTemplateColumns: view === "grid" 
+          ? "repeat(auto-fill, minmax(160px, 1fr))" 
+          : "1fr",
         gap: 16,
       }}>
         {currentProducts.map((product) => (
