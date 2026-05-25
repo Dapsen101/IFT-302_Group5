@@ -75,8 +75,34 @@ export default function Navbar({ searchQuery, onSearchChange, cartCount, onCartC
           </button>
         </div>
 
+        {/* Mobile Menu Toggle */}
+        <button
+          className="show-mobile"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          style={{
+            background: "none", border: "none", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: 8, color: "var(--text-main)", marginLeft: "auto"
+          }}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            {isMobileMenuOpen ? (
+              <>
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </>
+            ) : (
+              <>
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </>
+            )}
+          </svg>
+        </button>
+
         {/* Icon area */}
-        <div style={{ display: "flex", gap: "clamp(8px, 1.5vw, 20px)", marginLeft: "auto", alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
+        <div style={{ display: "flex", gap: "clamp(8px, 1.5vw, 20px)", marginLeft: "auto", alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }} className="hide-mobile">
 
           {/* Theme Toggle */}
           <button type="button" onClick={toggleDarkMode} style={iconBtnStyle} title="Toggle theme">
@@ -246,6 +272,121 @@ export default function Navbar({ searchQuery, onSearchChange, cartCount, onCartC
           ))}
         </div>
       </div>
+
+      {/* Mobile Menu Content */}
+      {isMobileMenuOpen && (
+        <div className="show-mobile" style={{
+          background: "var(--bg-nav)", borderTop: "1px solid var(--border-main)",
+          padding: "16px", display: "flex", flexDirection: "column", gap: 16
+        }}>
+          {/* Mobile Search */}
+          <div style={{ display: "flex" }}>
+            <input
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Search Product"
+              style={{
+                flex: 1, padding: "9px 14px", border: "1px solid var(--border-main)",
+                borderRight: "none", borderRadius: "6px 0 0 6px",
+                fontSize: 14, outline: "none", background: 'var(--bg-input)', color: 'var(--text-main)',
+              }}
+            />
+            <button style={{
+              padding: "9px 18px", background: "var(--accent)", color: "var(--accent-foreground)",
+              border: "none", borderRadius: "0 6px 6px 0",
+              fontWeight: 600, fontSize: 14, cursor: "pointer",
+            }}>
+              Search
+            </button>
+          </div>
+
+          {/* Mobile Icons */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <button type="button" onClick={toggleDarkMode} style={iconBtnStyle}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-strong)" strokeWidth="1.8">
+                {isDarkMode ? (
+                  <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                ) : (
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                )}
+              </svg>
+              <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{isDarkMode ? "Light" : "Dark"}</span>
+            </button>
+            <NavIconBtn label="Orders" path={ORDERS_PATH} onClick={() => { setIsMobileMenuOpen(false); onNavigate("orders"); }} />
+            <NavIconBtn label="Saved" path={SAVED_PATH} onClick={() => { setIsMobileMenuOpen(false); onNavigate("wishlist"); }} />
+            
+            <button type="button" onClick={() => { setIsMobileMenuOpen(false); onCartClick(); }} style={iconBtnStyle}>
+              <div style={{ position: "relative" }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-strong)" strokeWidth="1.8">
+                  <path d={CART_PATH} />
+                  <circle cx="9" cy="21" r="1" />
+                  <circle cx="20" cy="21" r="1" />
+                </svg>
+                {cartCount > 0 && (
+                  <span style={{
+                    position: "absolute", top: -6, right: -8,
+                    minWidth: 18, height: 18, borderRadius: 9,
+                    background: "#EF4444", color: "#fff",
+                    fontSize: 11, fontWeight: 700,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    padding: "0 4px",
+                  }}>
+                    {cartCount}
+                  </span>
+                )}
+              </div>
+              <span style={{ fontSize: 11, color: "var(--text-muted)" }}>My cart</span>
+            </button>
+
+            {!user ? (
+              <button
+                type="button"
+                onClick={() => { setIsMobileMenuOpen(false); onSignInClick(); }}
+                style={{
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
+                  background: "none", border: "none", cursor: "pointer"
+                }}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-strong)" strokeWidth="1.8">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" />
+                </svg>
+                <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Sign in</span>
+              </button>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }} onClick={() => { setIsMobileMenuOpen(false); onNavigate("profile"); }}>
+                <div style={{
+                  width: 26, height: 26, borderRadius: "50%",
+                  background: "linear-gradient(135deg, var(--accent), #6D28D9)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  color: "var(--accent-foreground)", fontWeight: 700, fontSize: 11,
+                }}>
+                  {initials}
+                </div>
+                <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Profile</span>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile Nav Links */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
+            <button style={{
+              padding: "10px", border: "1px solid var(--border-main)", borderRadius: 6, background: "var(--bg-input)",
+              cursor: "pointer", fontSize: 14, color: "var(--text-strong)",
+              display: "flex", alignItems: "center", gap: 6, textAlign: "left"
+            }}>
+              ☰ All categories
+            </button>
+            {NAV_LINKS.map((link) => (
+              <button key={link} style={{
+                padding: "10px", border: "1px solid var(--border-main)", borderRadius: 6, background: "none",
+                cursor: "pointer", fontSize: 14, color: "var(--text-strong)", textAlign: "left"
+              }}>
+                {link}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </header>
   );
 }

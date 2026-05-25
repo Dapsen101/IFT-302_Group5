@@ -60,7 +60,8 @@ html[data-theme="dark"] {
 
 /* Base layout */
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg-main); color: var(--text-main); font-family: 'Segoe UI', system-ui, sans-serif; }
+html, body { overflow-x: hidden; width: 100%; margin: 0; }
+body { background: var(--bg-main); color: var(--text-main); font-family: 'Segoe UI', system-ui, sans-serif; }
 #root {
   width: 100%;
   max-width: 1126px;
@@ -101,9 +102,9 @@ code { font-size: 15px; line-height: 135%; padding: 4px 8px; background: var(--c
 
 /* Mobile utilities */
 @media (max-width: 768px) {
-  .hide-mobile { display: none; }
+  .hide-mobile { display: none !important; }
 }
 
 @media (min-width: 769px) {
-  .show-mobile { display: none; }
+  .show-mobile { display: none !important; }
 }

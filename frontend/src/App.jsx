@@ -33,8 +33,8 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // ── Page routing: "shop" | "cart" | "checkout" | "login" | "signup" ──
   const [page, setPage] = useState("shop");
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // ── Auth state ────────────────────────────────────────────────
   const [user, setUser] = useState(null); // { name, email }
@@ -301,29 +301,87 @@ export default function App() {
       {navbar}
 
       <div style={{ width: "100%", padding: "20px 16px" }}>
-        <Hero />
-        <CategoryStrip />
+        {!searchQuery && (
+          <>
+            <Hero />
+            <CategoryStrip />
+          </>
+        )}
 
-        <div style={{ display: "flex", gap: "clamp(16px, 3vw, 24px)", alignItems: "flex-start", flexWrap: "wrap" }}>
-          <div style={{ display: "flex", flex: "0 0 auto", width: "230px", minHeight: "100vh" }} className="hide-mobile">
-            <Sidebar
-              categories={categories}
-              brands={brands}
-              selectedCat={selectedCat}
-              selectedCondition={selectedCondition}
-              checkedBrands={checkedBrands}
-              minPrice={minPrice}
-              maxPrice={maxPrice}
-              selectedRating={selectedRating}
-              onCategoryChange={setSelectedCat}
-              onConditionChange={setSelectedCondition}
-              onBrandToggle={handleBrandToggle}
-              onMinPriceChange={setMinPrice}
-              onMaxPriceChange={setMaxPrice}
-              onRatingChange={setSelectedRating}
-              onClearFilters={handleClearFilters}
-            />
-          </div>
+        <div style={{ display: "flex", gap: "clamp(16px, 3vw, 24px)", alignItems: "flex-start", flexWrap: "wrap", position: "relative" }}>
+          
+          {/* Mobile Filter Button */}
+          {!searchQuery && (
+            <div className="show-mobile" style={{ width: "100%", marginBottom: "16px" }}>
+              <button 
+                onClick={() => setShowMobileFilters(!showMobileFilters)}
+                style={{
+                  width: "100%", padding: "10px", background: "var(--bg-card)",
+                  border: "1px solid var(--border-main)", borderRadius: "8px",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+                  color: "var(--text-main)", fontWeight: "600"
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+                </svg>
+                {showMobileFilters ? "Hide Filters" : "Show Filters"}
+              </button>
+            </div>
+          )}
+
+          {!searchQuery && (
+            <div 
+              style={{ 
+                display: showMobileFilters ? "flex" : "none", 
+                flex: "0 0 auto", width: "100%", minHeight: "auto", 
+                background: "var(--bg-card)", padding: "16px", borderRadius: "8px", 
+                border: "1px solid var(--border-main)" 
+              }} 
+              className="show-mobile"
+            >
+              <Sidebar
+                categories={categories}
+                brands={brands}
+                selectedCat={selectedCat}
+                selectedCondition={selectedCondition}
+                checkedBrands={checkedBrands}
+                minPrice={minPrice}
+                maxPrice={maxPrice}
+                selectedRating={selectedRating}
+                onCategoryChange={setSelectedCat}
+                onConditionChange={setSelectedCondition}
+                onBrandToggle={handleBrandToggle}
+                onMinPriceChange={setMinPrice}
+                onMaxPriceChange={setMaxPrice}
+                onRatingChange={setSelectedRating}
+                onClearFilters={handleClearFilters}
+              />
+            </div>
+          )}
+
+          {!searchQuery && (
+            <div style={{ display: "flex", flex: "0 0 auto", width: "230px", minHeight: "100vh" }} className="hide-mobile">
+              <Sidebar
+                categories={categories}
+                brands={brands}
+                selectedCat={selectedCat}
+                selectedCondition={selectedCondition}
+                checkedBrands={checkedBrands}
+                minPrice={minPrice}
+                maxPrice={maxPrice}
+                selectedRating={selectedRating}
+                onCategoryChange={setSelectedCat}
+                onConditionChange={setSelectedCondition}
+                onBrandToggle={handleBrandToggle}
+                onMinPriceChange={setMinPrice}
+                onMaxPriceChange={setMaxPrice}
+                onRatingChange={setSelectedRating}
+                onClearFilters={handleClearFilters}
+              />
+            </div>
+          )}
+          
           <div style={{ flex: 1, minWidth: 0 }}>
             {loading ? (
               <div style={{ flex: 1, padding: 24, background: "var(--bg-card)", borderRadius: 12, border: "1px solid var(--border-main)" }}>

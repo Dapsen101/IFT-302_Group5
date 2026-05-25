@@ -40,7 +40,7 @@ export default function ProductGrid({ products, currentPage, pageSize, onPageCha
           onChange={(e) => setSortBy(e.target.value)}
           style={{
             padding: "8px 12px", border: "1px solid #D1D5DB",
-            borderRadius: 6, fontSize: 14, background: "#fff", cursor: "pointer",
+            borderRadius: 6, fontSize: 14, background: "#fff", color: "black", cursor: "pointer",
           }}
         >
           {SORT_OPTIONS.map((o) => <option key={o}>{o}</option>)}
